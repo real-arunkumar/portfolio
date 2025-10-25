@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather App</title>
+  <style>
+    body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #74ABE2, #5563DE);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  width: 300px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.search-box {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px 0 0 10px;
+  outline: none;
+}
+
+.search-box button {
+  padding: 10px 15px;
+  border: none;
+  background-color: #222;
+  color: #fff;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+}
+
+.weather-info {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.weather-info img {
+  width: 80px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🌦️ Weather App</h2>
+    <div class="search-box">
+      <input type="text" id="city" placeholder="Enter city name">
+      <button onclick="getWeather()">Search</button>
+    </div>
+
+    <div class="weather-info" id="weather">
+      
+    </div>
+  </div>
+
+  <script>
+    // 🌦️ Weather App - using OpenWeatherMap API
+async function getWeather() {
+  const city = document.getElementById("city").value.trim();
+  const weatherDiv = document.getElementById("weather");
+
+  if (city === "") {
+    weatherDiv.innerHTML = "<p>Please enter a city name.</p>";
+    return;
+  }
+
+  const apiKey = "fe42c5519061b69f7dea2ea60552330d"; // 🔑 Replace with your OpenWeatherMap API key
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.cod === "404") {
+      weatherDiv.innerHTML = "<p>City not found!</p>";
+      return;
+    }
+
+    const icon = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+    const temp = data.main.temp;
+    const weather = data.weather[0].description;
+    const humidity = data.main.humidity;
+    const wind = data.wind.speed;
+
+    weatherDiv.innerHTML = `
+      <h3>${data.name}, ${data.sys.country}</h3>
+      <img src="${icon}" alt="${weather}">
+      <h2>${temp}°C</h2>
+      <p>${weather}</p>
+      <p>💧 Humidity: ${humidity}%</p>
+      <p>🌬️ Wind: ${wind} m/s</p>
+    `;
+  } catch (error) {
+    weatherDiv.innerHTML = "<p>Error fetching weather data.</p>";
+  }
+}
+
+  </script>
+</body>
+</html>

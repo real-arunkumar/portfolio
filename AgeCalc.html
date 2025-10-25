@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Age Calculator</title>
+  <style>
+    :root{
+      --bg1: #f6f9ff;
+      --bg2: #eef6ff;
+      --accent: #6d36f7;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --good: #10b981;
+      --danger: #ef4444;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      padding:24px;
+      color:#0f172a;
+    }
+
+    .card{
+      width:100%;
+      max-width:720px;
+      background:var(--card);
+      border-radius:16px;
+      box-shadow: 0 10px 30px rgba(15,23,42,0.08);
+      padding:28px;
+      display:grid;
+      grid-template-columns: 1fr 320px;
+      gap:24px;
+      align-items:start;
+    }
+
+    @media (max-width:800px){
+      .card{grid-template-columns:1fr; padding:20px}
+    }
+
+    h1{
+      margin:0 0 6px 0;
+      font-size:20px;
+      letter-spacing:-0.2px;
+    }
+    p.lead{margin:0 0 18px 0;color:var(--muted);font-size:14px}
+
+    form{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:end;
+    }
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .field{
+      min-width:0;
+    }
+
+    input[type="date"]{
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid #e6e9ef;
+      background: #fbfdff;
+      font-size:14px;
+      width:220px;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      border:0;
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+    }
+
+    .btn-primary{
+      background:linear-gradient(90deg,var(--accent),#9536f7);
+      color:white;
+      box-shadow: 0 6px 18px rgba(109,54,247,0.18);
+    }
+    .btn-ghost{
+      background:transparent;
+      border:1px solid #e6e9ef;
+      color:var(--accent);
+    }
+
+    .result {
+      border-radius:12px;
+      padding:18px;
+      background: linear-gradient(180deg,#fbf8ff,#ffffff);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .big{
+      font-size:28px;
+      font-weight:700;
+      letter-spacing:-0.5px;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .chips{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .chip{
+      padding:10px 12px;
+      background:#fbfdff;
+      border-radius:10px;
+      border:1px solid #f0f3ff;
+      min-width:88px;
+      text-align:center;
+      box-shadow: 0 6px 12px rgba(15,23,42,0.04);
+    }
+    .chip .num{font-weight:700;font-size:18px}
+    .chip .lbl{font-size:12px;color:var(--muted)}
+
+    .message{
+      color:var(--danger);
+      font-size:13px;
+      margin-top:8px;
+    }
+
+    footer.note{font-size:12px;color:var(--muted);margin-top:8px}
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <section>
+      <h1>Age Calculator</h1>
+      <p class="lead">Enter your date of birth and get your age shown in years, months and days. Handles leap years and future-date validation.</p>
+
+      <form id="ageForm" onsubmit="return false;" aria-label="Age calculator form">
+        <div class="field">
+          <label for="dob">Date of birth</label>
+          <input id="dob" type="date" required aria-required="true" />
+        </div>
+
+        <div class="controls">
+          <button id="calcBtn" class="btn-primary" type="button">Calculate</button>
+          <button id="resetBtn" class="btn-ghost" type="button">Reset</button>
+        </div>
+
+        <div id="error" class="message" role="status" aria-live="polite" style="display:none"></div>
+      </form>
+
+      <p class="note">Tip: you can use the date picker or type <kbd>YYYY-MM-DD</kbd>. Today's date is shown by your browser's clock.</p>
+    </section>
+
+    <aside>
+      <div class="result" aria-live="polite">
+        <div>
+          <div class="sub">Your age</div>
+          <div id="ageSummary" class="big">—</div>
+        </div>
+
+        <div class="chips" aria-hidden="false">
+          <div class="chip">
+            <div class="num" id="years">—</div>
+            <div class="lbl">Years</div>
+          </div>
+          <div class="chip">
+            <div class="num" id="months">—</div>
+            <div class="lbl">Months</div>
+          </div>
+          <div class="chip">
+            <div class="num" id="days">—</div>
+            <div class="lbl">Days</div>
+          </div>
+          <div class="chip">
+            <div class="num" id="totalDays">—</div>
+            <div class="lbl">Total days</div>
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <div class="sub">Calculated at</div>
+          <div id="calculatedAt" class="sub"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    // Helper: days in a month for a given year/month
+    function daysInMonth(year, month) {
+      return new Date(year, month + 1, 0).getDate();
+    }
+
+    // Core age calculation: returns {years, months, days, totalDays}
+    function calculateAge(dobDate, nowDate = new Date()) {
+      // Normalize times to avoid timezone partial-day issues
+      const dob = new Date(dobDate.getFullYear(), dobDate.getMonth(), dobDate.getDate());
+      const now = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate());
+
+      if (dob > now) {
+        return null; // future DOB
+      }
+
+      let years = now.getFullYear() - dob.getFullYear();
+      let months = now.getMonth() - dob.getMonth();
+      let days = now.getDate() - dob.getDate();
+
+      if (days < 0) {
+        // borrow days from previous month
+        const prevMonth = (now.getMonth() - 1 + 12) % 12;
+        const prevMonthYear = prevMonth === 11 ? now.getFullYear() - 1 : now.getFullYear();
+        days += daysInMonth(prevMonthYear, prevMonth);
+        months -= 1;
+      }
+
+      if (months < 0) {
+        months += 12;
+        years -= 1;
+      }
+
+      // total days difference (simple diff ignoring time)
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const totalDays = Math.floor((now - dob) / msPerDay);
+
+      return { years, months, days, totalDays };
+    }
+
+    // UI wiring
+    const dobInput = document.getElementById('dob');
+    const calcBtn = document.getElementById('calcBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const err = document.getElementById('error');
+    const yearsEl = document.getElementById('years');
+    const monthsEl = document.getElementById('months');
+    const daysEl = document.getElementById('days');
+    const totalDaysEl = document.getElementById('totalDays');
+    const ageSummaryEl = document.getElementById('ageSummary');
+    const calculatedAtEl = document.getElementById('calculatedAt');
+
+    function showError(message) {
+      err.style.display = 'block';
+      err.textContent = message;
+    }
+    function clearError() {
+      err.style.display = 'none';
+      err.textContent = '';
+    }
+
+    function renderResult(result) {
+      if (!result) {
+        yearsEl.textContent = '—';
+        monthsEl.textContent = '—';
+        daysEl.textContent = '—';
+        totalDaysEl.textContent = '—';
+        ageSummaryEl.textContent = '—';
+        calculatedAtEl.textContent = '';
+        return;
+      }
+      yearsEl.textContent = result.years;
+      monthsEl.textContent = result.months;
+      daysEl.textContent = result.days;
+      totalDaysEl.textContent = result.totalDays.toLocaleString();
+
+      const parts = [];
+      if (result.years) parts.push(result.years + (result.years === 1 ? ' year' : ' years'));
+      if (result.months) parts.push(result.months + (result.months === 1 ? ' month' : ' months'));
+      if (result.days) parts.push(result.days + (result.days === 1 ? ' day' : ' days'));
+      ageSummaryEl.textContent = parts.length ? parts.join(', ') : '0 days';
+
+      const now = new Date();
+      calculatedAtEl.textContent = now.toLocaleString();
+    }
+
+    calcBtn.addEventListener('click', () => {
+      clearError();
+      const dobValue = dobInput.value;
+      if (!dobValue) {
+        showError('Please select your date of birth.');
+        return;
+      }
+
+      // parse input (input type=date returns YYYY-MM-DD)
+      const parts = dobValue.split('-').map(Number);
+      // parts: [yyyy, mm, dd]
+      const dob = new Date(parts[0], parts[1] - 1, parts[2]);
+
+      const result = calculateAge(dob, new Date());
+      if (!result) {
+        showError('Date of birth is in the future. Please select a valid date.');
+        renderResult(null);
+        return;
+      }
+
+      renderResult(result);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      dobInput.value = '';
+      clearError();
+      renderResult(null);
+    });
+
+    // Keyboard: press Enter on date field to calculate
+    dobInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        calcBtn.click();
+      }
+    });
+
+    // Optional: prefill a sample value for quick demo (comment out if not wanted)
+    // dobInput.value = '1998-01-15';
+  </script>
+</body>
+</html>
